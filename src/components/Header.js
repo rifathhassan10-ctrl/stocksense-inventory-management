@@ -3,6 +3,7 @@ import { store } from '../store/dataStore.js';
 
 export function renderHeader(currentPath = 'dashboard') {
   const currentWarehouse = store.getSelectedWarehouse();
+  const user = JSON.parse(localStorage.getItem('stocksense_user') || '{"name":"Alex Rivera","role":"ADMIN","email":"alex.rivera@stocksense.io"}');
 
   // Compute Breadcrumb
   let breadcrumbTitle = 'Overview';
@@ -146,16 +147,21 @@ export function renderHeader(currentPath = 'dashboard') {
         <div class="h-5 w-px bg-border-subtle"></div>
 
         <!-- User Profile Pill -->
-        <a href="#/login" class="flex items-center gap-space-sm pl-1 group cursor-pointer" title="Switch User / Sign Out">
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[18px]">person</span>
-          </div>
-          <div class="hidden md:flex flex-col text-left">
-            <span class="font-label-md text-label-md text-on-surface font-semibold leading-none group-hover:text-primary transition-colors">Alex Rivera</span>
-            <span class="font-label-sm text-label-sm text-tertiary leading-none mt-1">Inventory Manager</span>
-          </div>
-          <span class="material-symbols-outlined text-[16px] text-tertiary group-hover:text-primary transition-colors">logout</span>
-        </a>
+        <div class="flex items-center gap-space-sm pl-1">
+          <a href="#/admin" class="flex items-center gap-space-sm group cursor-pointer" title="View Profile & Access Control">
+            <div class="w-8 h-8 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : 'bg-primary'} flex items-center justify-center text-on-primary group-hover:scale-105 transition-transform text-xs font-bold">
+              ${user.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+            </div>
+            <div class="hidden md:flex flex-col text-left">
+              <span class="font-label-md text-label-md text-on-surface font-semibold leading-none group-hover:text-primary transition-colors">${user.name}</span>
+              <span class="font-label-sm text-label-sm text-tertiary leading-none mt-1">${user.role === 'EMPLOYEE' ? 'Warehouse Lead (Employee)' : 'Inventory Manager (Admin)'}</span>
+            </div>
+          </a>
+
+          <button onclick="window.signOut()" class="p-1.5 text-tertiary hover:text-status-danger rounded transition-colors" title="Lock & Sign Out">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+          </button>
+        </div>
       </div>
     </header>
   `;

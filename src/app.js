@@ -15,6 +15,7 @@ import { renderWarehousesView } from './views/WarehousesView.js';
 import { renderAnalyticsView, initAnalyticsViewEvents } from './views/AnalyticsView.js';
 import { renderAlertsView, initAlertsViewEvents } from './views/AlertsView.js';
 import { renderLoginView, initLoginViewEvents } from './views/LoginView.js';
+import { renderAdminView, initAdminViewEvents } from './views/AdminView.js';
 
 class App {
   constructor() {
@@ -74,12 +75,26 @@ class App {
   }
 
   getRouteFromHash() {
+    const isAuth = localStorage.getItem('stocksense_auth') === 'true';
     const hash = window.location.hash.slice(2); // Strip '#/'
+    if (!isAuth) {
+      return 'login';
+    }
     return hash || 'dashboard';
   }
 
   async handleRoute() {
     this.currentRoute = this.getRouteFromHash();
+
+    // Strict Auth Guard: If not authenticated, ALWAYS open Login page first
+    const isAuth = localStorage.getItem('stocksense_auth') === 'true';
+    if (!isAuth) {
+      this.currentRoute = 'login';
+      if (window.location.hash !== '#/login') {
+        window.location.hash = '#/login';
+        return;
+      }
+    }
 
     // Close mobile sidebar on navigation
     window.toggleMobileSidebar(false);
@@ -135,6 +150,9 @@ class App {
     } else if (this.currentRoute === 'alerts') {
       mainEl.innerHTML = renderAlertsView();
       initAlertsViewEvents();
+    } else if (this.currentRoute === 'admin') {
+      mainEl.innerHTML = renderAdminView();
+      initAdminViewEvents();
     } else {
       // Fallback
       mainEl.innerHTML = renderDashboardView();
@@ -177,6 +195,9 @@ class App {
     } else if (this.currentRoute === 'alerts') {
       mainEl.innerHTML = renderAlertsView();
       initAlertsViewEvents();
+    } else if (this.currentRoute === 'admin') {
+      mainEl.innerHTML = renderAdminView();
+      initAdminViewEvents();
     }
   }
 
@@ -277,6 +298,15 @@ class App {
     // Quick Toast helper for buttons
     window.triggerToast = (title, message, type = 'info') => {
       showToast(title, message, type);
+    };
+
+    // Sign Out Handler (Locks session, clears storage, redirects to Login)
+    window.signOut = () => {
+      localStorage.removeItem('stocksense_auth');
+      localStorage.removeItem('stocksense_user');
+      showToast('Session Ended', 'Terminal locked. Operator signed out successfully.', 'info');
+      window.location.hash = '#/login';
+      setTimeout(() => this.handleRoute(), 50);
     };
   }
 

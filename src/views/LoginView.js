@@ -33,11 +33,64 @@ export function renderLoginView() {
           </div>
 
           <!-- Heading Section -->
-          <div class="space-y-2 mb-8">
+          <div class="space-y-2 mb-6">
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Sign in to Inventory Control</h1>
             <p class="text-sm sm:text-base text-slate-500 leading-relaxed">
               Multi-location ledger audits, real-time pick/pack logistics, and critical replenishment alerts.
             </p>
+          </div>
+
+          <!-- DEMO ACCESS CREDENTIALS & ROLE SELECTOR -->
+          <div class="mb-6 p-4 rounded-xl border border-primary/20 bg-primary/5 shadow-sm">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                <span class="material-symbols-outlined text-[16px]">vpn_key</span>
+                <span>Active System Login Credentials</span>
+              </div>
+              <span class="text-[11px] font-semibold text-slate-500">1-Click Auto Login</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <!-- Admin Card -->
+              <div class="p-3 rounded-lg border border-slate-200 bg-white hover:border-primary transition-all flex flex-col justify-between shadow-xs">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-primary/10 text-primary">
+                      👑 Admin Role
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">ADM-01</span>
+                  </div>
+                  <div class="font-bold text-slate-900 text-sm mt-1">Alex Rivera</div>
+                  <div class="text-[12px] text-slate-600 font-mono mt-0.5">alex.rivera@stocksense.io</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Password: <code class="font-bold text-slate-800 bg-slate-100 px-1 py-0.5 rounded">admin123</code></div>
+                  <div class="text-[10px] text-primary font-medium mt-1">Full ERP Catalog, Settings &amp; Admin Console</div>
+                </div>
+                <button class="mt-2.5 w-full h-8 rounded bg-primary hover:bg-primary-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs btnQuickSignIn" data-email="alex.rivera@stocksense.io" data-pass="admin123" data-name="Alex Rivera" data-role="ADMIN" type="button">
+                  <span>Sign In as Admin</span>
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              </div>
+
+              <!-- Employee Card -->
+              <div class="p-3 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 transition-all flex flex-col justify-between shadow-xs">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">
+                      👷 Employee Role
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">OP-04</span>
+                  </div>
+                  <div class="font-bold text-slate-900 text-sm mt-1">Marcus Vance (FL-04)</div>
+                  <div class="text-[12px] text-slate-600 font-mono mt-0.5">operator.dock@stocksense.io</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Password: <code class="font-bold text-slate-800 bg-slate-100 px-1 py-0.5 rounded">operator123</code></div>
+                  <div class="text-[10px] text-emerald-600 font-medium mt-1">Dock Receipts, Deliveries &amp; Transfers</div>
+                </div>
+                <button class="mt-2.5 w-full h-8 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs btnQuickSignIn" data-email="operator.dock@stocksense.io" data-pass="operator123" data-name="Marcus Vance (FL-04)" data-role="EMPLOYEE" type="button">
+                  <span>Sign In as Employee</span>
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- FAST FEDERATED LOGINS -->
@@ -441,12 +494,32 @@ export function initLoginViewEvents() {
     });
   }
 
+  // 1-Click Quick Sign In for Admin & Employee
+  document.querySelectorAll('.btnQuickSignIn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const email = e.currentTarget.dataset.email;
+      const pass = e.currentTarget.dataset.pass;
+      const name = e.currentTarget.dataset.name;
+      const role = e.currentTarget.dataset.role;
+
+      // Populate input fields
+      const emailTab = document.getElementById('tab-btn-email');
+      if (emailTab) emailTab.click();
+      const emailInput = document.getElementById('work-email');
+      const passInput = document.getElementById('work-password');
+      if (emailInput) emailInput.value = email;
+      if (passInput) passInput.value = pass;
+
+      simulateAuthAndRedirect({ email, name, role });
+    });
+  });
+
   // Federated Logins
   document.querySelectorAll('.btnFederatedLogin').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const provider = e.currentTarget.dataset.provider;
       showToast('Federated Authentication', `Handshake initiated with ${provider}...`, 'info');
-      simulateAuthAndRedirect();
+      simulateAuthAndRedirect({ email: 'alex.rivera@stocksense.io', name: 'Alex Rivera', role: 'ADMIN' });
     });
   });
 
@@ -455,7 +528,6 @@ export function initLoginViewEvents() {
     btn.addEventListener('click', (e) => {
       const email = e.currentTarget.dataset.email;
       const role = e.currentTarget.dataset.role;
-      // Switch to email tab
       const emailTabBtn = document.getElementById('tab-btn-email');
       if (emailTabBtn) emailTabBtn.click();
 
@@ -474,7 +546,12 @@ export function initLoginViewEvents() {
   if (formEmail) {
     formEmail.addEventListener('submit', (e) => {
       e.preventDefault();
-      simulateAuthAndRedirect();
+      const email = document.getElementById('work-email')?.value.trim() || 'alex.rivera@stocksense.io';
+      const isOperator = email.toLowerCase().includes('operator') || email.toLowerCase().includes('dock');
+      const user = isOperator 
+        ? { email, name: 'Marcus Vance (FL-04)', role: 'EMPLOYEE' }
+        : { email, name: 'Alex Rivera', role: 'ADMIN' };
+      simulateAuthAndRedirect(user);
     });
   }
 
@@ -483,7 +560,7 @@ export function initLoginViewEvents() {
   if (formOtp) {
     formOtp.addEventListener('submit', (e) => {
       e.preventDefault();
-      simulateAuthAndRedirect();
+      simulateAuthAndRedirect({ email: 'operator.dock@stocksense.io', name: 'Marcus Vance (FL-04)', role: 'EMPLOYEE' });
     });
   }
 
@@ -492,12 +569,12 @@ export function initLoginViewEvents() {
   if (formSso) {
     formSso.addEventListener('submit', (e) => {
       e.preventDefault();
-      simulateAuthAndRedirect();
+      simulateAuthAndRedirect({ email: 'alex.rivera@stocksense.io', name: 'Alex Rivera', role: 'ADMIN' });
     });
   }
 }
 
-function simulateAuthAndRedirect() {
+function simulateAuthAndRedirect(user = { email: 'alex.rivera@stocksense.io', name: 'Alex Rivera', role: 'ADMIN' }) {
   const submitBtn = document.getElementById('submit-btn');
   if (submitBtn) {
     submitBtn.innerHTML = `
@@ -505,26 +582,34 @@ function simulateAuthAndRedirect() {
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <span>Authenticating terminal...</span>
+      <span>Authenticating ${user.role}...</span>
     `;
     submitBtn.disabled = true;
   }
 
+  // Store authenticated session
+  localStorage.setItem('stocksense_auth', 'true');
+  localStorage.setItem('stocksense_user', JSON.stringify(user));
+
   setTimeout(() => {
-    showToast('Terminal Handshake Approved', 'Welcome back, Alex Rivera. Redirecting to ERP Dashboard...', 'success');
+    showToast('Terminal Handshake Approved', `Welcome back, ${user.name}! (${user.role} Session Active)`, 'success');
     if (submitBtn) {
       submitBtn.innerHTML = `
         <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
-        <span>Access Granted</span>
+        <span>Access Granted • ${user.role}</span>
       `;
       submitBtn.classList.remove('bg-primary', 'hover:bg-primary-hover');
       submitBtn.classList.add('bg-emerald-600');
     }
 
     setTimeout(() => {
-      window.location.hash = '#/dashboard';
-    }, 700);
-  }, 800);
+      if (user.role === 'EMPLOYEE') {
+        window.location.hash = '#/operations';
+      } else {
+        window.location.hash = '#/dashboard';
+      }
+    }, 600);
+  }, 700);
 }

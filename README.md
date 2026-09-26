@@ -4,19 +4,45 @@
 
 ---
 
+## 🔐 Authentication & Role-Based Access Control
+
+StockSense enforces an **authentication-first routing flow**. When opening the web application at `http://localhost:3000`, visitors are greeted first with the **Enterprise Login Page (`#/login`)**. Once authenticated, users are routed to their designated workstation based on their role.
+
+### 📋 Active Test Credentials
+
+| Role | Name | Email | Password | Landing Page | Key Permissions |
+|---|---|---|---|---|---|
+| 👑 **System Admin** | Alex Rivera | `alex.rivera@stocksense.io` | `admin123` | `#/dashboard` | Full ERP catalog, facilities, governance toggles, system settings, Admin & RBAC console (`#/admin`) |
+| 👷 **Warehouse Employee** | Marcus Vance (FL-04) | `operator.dock@stocksense.io` | `operator123` | `#/operations` | Dock Intake Receipts, Outbound Deliveries, Bin-to-Bin Transfers, Physical Cycle Count Variance |
+| 🔍 **Compliance Auditor** | Elena Rostova | `auditor@stocksense.io` | `auditor123` | `#/stock-ledger` | Cryptographic Ledger Audit, SHA-256 state chain verification, CSV & Audit Report export |
+
+> **⚡ 1-Click Fast Login**: The login screen features dedicated 1-click **"Sign In as Admin"** and **"Sign In as Employee"** buttons for immediate testing without manually typing credentials.
+
+---
+
 ## 🌟 Key Features
 
 ### 1. 🔐 Universal Multi-Provider Enterprise Login (`#/login`)
+- **Login-First Guard**: Unauthenticated requests automatically redirect to `#/login` first.
 - **Stitch Design**: Faithfully implemented from Stitch Screen `c031b3bb2bb044d3939d83a8a6c5d13c`.
 - **Federated SSO**: One-click authentication with Google Workspace, Microsoft 365 / Azure AD, and Apple ID.
 - **3 Authentication Modalities**:
   - **Email & Master Passphrase**: Secure credentials with show/hide password toggle.
   - **SMS OTP**: Registered mobile authentication with 6-digit passcode grid and FIDO2 / YubiKey hardware key support.
   - **SAML / SSO**: Corporate identity provider routing (`.stocksense.io`) with FIPS 140-2 Level 3 certificate notice.
-- **Quick-Fill Demo Personas**: Instant evaluation buttons for *Alex Rivera (Inventory Manager)* and *Operator FL-04 (Warehouse Lead)*.
+- **Credentials Panel**: Visible cards displaying exact test credentials and 1-click login buttons.
 - **Right Telemetry Showcase**: Live immutable ledger card snapshot, volumetric bay load gauge, weekly inbound velocity bar chart, and enterprise endorsement.
 
-### 2. 📊 ERP Inventory Dashboard (`#/dashboard`)
+### 2. 🛡️ Admin Management & RBAC Console (`#/admin`)
+- **System Operator Directory**: Live view of registered administrators, dock operators, and compliance auditors with active session telemetry.
+- **RBAC Capability Matrix**: Side-by-side comparison of role privileges across Catalog Management, Ledger Hashing, Governance Settings, and Stock Movements.
+- **ERP Governance Controls**:
+  - *Strict Negative-Stock Protection* (blocks dispatch if available inventory < requested).
+  - *Conservation Invariant Enforcement* (guarantees internal transfers never alter total system volume).
+  - *Dual-Operator Discrepancy Signoff* (requires manager counter-signature for count variances > $500).
+- **Compliance Audit Certification**: Print-ready cryptographic audit report generation.
+
+### 3. 📊 ERP Inventory Dashboard (`#/dashboard`)
 - **6 Core KPIs**: Total Active SKUs (10 items), Inventory Valuation ($81,649.90+), Stockout Exceptions, Ledger Integrity, and Warehouse Capacity.
 - **Facility Scope Pills**: Instant context filtering between All Facilities, Main Warehouse (Bay A-F), Production Plant A, and Logistics Hub.
 - **Live Ledger Feed**: Real-time chronological transaction stream.

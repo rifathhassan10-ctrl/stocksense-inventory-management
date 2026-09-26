@@ -600,35 +600,135 @@ app.get('/api/v1/analytics/anomalies', (req, res) => {
 });
 
 // ============================================================================
-// 8. AUTHENTICATION API
+// 8. AUTHENTICATION & ROLE-BASED ACCESS CONTROL API
 // ============================================================================
-app.post('/api/v1/auth/login', (req, res) => {
-  const { email, password, otp, domain, provider } = req.body;
 
+const SYSTEM_USERS = [
+  {
+    id: 'usr-admin-01',
+    name: 'Alex Rivera',
+    email: 'alex.rivera@stocksense.io',
+    password: 'admin123',
+    role: 'ADMIN',
+    roleTitle: 'Inventory Manager & System Admin',
+    badge: 'ADM-01',
+    facility: 'WH-02 Main Hub',
+    status: 'ACTIVE',
+    securityClearance: 'FIPS 140-2 Level 3 (Superuser)',
+    permissions: [
+      'ALL_PERMISSIONS',
+      'MANAGE_CATALOG',
+      'EXECUTE_OPERATIONS',
+      'AUDIT_LEDGER',
+      'PROVISION_FACILITIES',
+      'AI_REORDERS',
+      'USER_MANAGEMENT'
+    ]
+  },
+  {
+    id: 'usr-emp-02',
+    name: 'Marcus Vance (FL-04)',
+    email: 'operator.dock@stocksense.io',
+    password: 'operator123',
+    role: 'EMPLOYEE',
+    roleTitle: 'Warehouse Lead & Operations Specialist',
+    badge: 'OP-04',
+    facility: 'Bay A-F Logistics Dock',
+    status: 'ACTIVE',
+    securityClearance: 'Terminal Authorized (Operations)',
+    permissions: [
+      'EXECUTE_RECEIPTS',
+      'EXECUTE_DELIVERIES',
+      'EXECUTE_TRANSFERS',
+      'CYCLE_COUNT_ADJUSTMENTS',
+      'VIEW_PRODUCTS'
+    ]
+  },
+  {
+    id: 'usr-auditor-03',
+    name: 'Elena Rostova',
+    email: 'auditor@stocksense.io',
+    password: 'auditor123',
+    role: 'AUDITOR',
+    roleTitle: 'Chief Compliance Auditor (SOC2)',
+    badge: 'AUD-09',
+    facility: 'Corporate Compliance Node',
+    status: 'ACTIVE',
+    securityClearance: 'Read-Only Cryptographic Audit',
+    permissions: [
+      'VIEW_PRODUCTS',
+      'AUDIT_LEDGER',
+      'VERIFY_HASH_CHAIN',
+      'EXPORT_REPORTS'
+    ]
+  }
+];
+
+let systemSettings = {
+  enforceNegativeStockGuard: true,
+  enforceConservationInvariant: true,
+  dualSignoffForScrap: true,
+  sha256StateChainAudit: true,
+  autoDisallowOverCapacityBins: true,
+  maintenanceMode: false
+};
+
+app.post('/api/v1/auth/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const foundUser = SYSTEM_USERS.find(u => 
+    u.email.toLowerCase() === (email || '').toLowerCase().trim()
+  );
+
+  // Allow login with demo persona or password check
+  if (foundUser) {
+    if (password && password !== '••••••••••••' && password !== foundUser.password && password !== 'admin123') {
+      return res.status(401).json({ error: 'Invalid password. Hint: check demo credentials below.' });
+    }
+
+    const { password: _, ...safeUser } = foundUser;
+    return res.json({
+      success: true,
+      token: 'jwt-stocksense-' + safeUser.role.toLowerCase() + '-' + Date.now(),
+      user: safeUser
+    });
+  }
+
+  // Fallback for custom emails
   res.json({
     success: true,
     token: 'jwt-stocksense-session-' + Date.now(),
     user: {
-      id: 'usr-001',
-      name: email === 'operator.dock@stocksense.io' ? 'Operator FL-04' : 'Alex Rivera',
-      email: email || 'alex.rivera@stocksense.io',
-      role: email === 'operator.dock@stocksense.io' ? 'Warehouse Lead' : 'Inventory Manager',
-      facility: 'WH-02 Main Hub',
-      securityClearance: 'FIPS 140-2 Level 3'
+      id: 'usr-custom-' + Date.now(),
+      name: email.split('@')[0],
+      email: email,
+      role: 'EMPLOYEE',
+      roleTitle: 'Warehouse Operator',
+      badge: 'OP-TEMP',
+      facility: 'Main Warehouse',
+      securityClearance: 'Terminal Standard',
+      permissions: ['EXECUTE_OPERATIONS', 'VIEW_PRODUCTS']
     }
   });
 });
 
 app.get('/api/v1/auth/me', (req, res) => {
-  res.json({
-    user: {
-      id: 'usr-001',
-      name: 'Alex Rivera',
-      email: 'alex.rivera@stocksense.io',
-      role: 'Inventory Manager',
-      facility: 'Main Warehouse (Bay A-F)'
-    }
-  });
+  const { password: _, ...adminUser } = SYSTEM_USERS[0];
+  res.json({ user: adminUser });
+});
+
+// Admin User Management & Settings Endpoints
+app.get('/api/v1/admin/users', (req, res) => {
+  res.json(SYSTEM_USERS.map(({ password, ...u }) => u));
+});
+
+app.get('/api/v1/admin/settings', (req, res) => {
+  res.json(systemSettings);
+});
+
+app.post('/api/v1/admin/settings', (req, res) => {
+  systemSettings = { ...systemSettings, ...req.body };
+  res.json({ success: true, settings: systemSettings });
 });
 
 // ============================================================================

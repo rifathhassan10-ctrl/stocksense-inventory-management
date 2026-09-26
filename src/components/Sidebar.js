@@ -13,6 +13,10 @@ export function renderSidebar(currentPath = 'dashboard') {
   const isWarehouses = currentPath === 'warehouses';
   const isAnalytics = currentPath === 'analytics';
   const isAlerts = currentPath === 'alerts';
+  const isAdmin = currentPath === 'admin';
+
+  const user = JSON.parse(localStorage.getItem('stocksense_user') || '{"name":"Alex Rivera","role":"ADMIN"}');
+  const userInitials = (user.name || 'AR').split(' ').map(n => n[0]).join('').substring(0, 2);
 
   const activeClass = "bg-surface-container-low text-primary font-label-lg font-semibold border-l-2 border-primary";
   const inactiveClass = "text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-subtle hover:text-on-surface";
@@ -113,25 +117,44 @@ export function renderSidebar(currentPath = 'dashboard') {
             </div>
             <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-status-warning-bg text-status-warning">4</span>
           </a>
+
+          <div class="px-space-sm pt-space-md pb-1 font-label-sm text-label-sm text-tertiary uppercase tracking-wider font-semibold">Governance &amp; Security</div>
+
+          <a class="flex items-center justify-between px-space-sm py-2 rounded transition-colors ${isAdmin ? activeClass : inactiveClass}" data-path="admin" href="#/admin">
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+              <span>Admin &amp; RBAC</span>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold ${user.role === 'ADMIN' ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-500'}">
+              ${user.role}
+            </span>
+          </a>
         </nav>
       </div>
 
-      <!-- Bottom Cloud Health Status & Sign Out -->
+      <!-- Bottom User Session & Cloud Health Status -->
       <div class="p-space-md border-t border-border-subtle bg-surface-card space-y-2">
-        <a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant font-label-md text-label-md hover:bg-surface-subtle hover:text-on-surface transition-colors" href="#/login">
-          <div class="flex items-center gap-space-sm">
-            <span class="material-symbols-outlined text-[18px]">logout</span>
-            <span>Sign Out / Switch</span>
-          </div>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-tertiary">Lock</span>
-        </a>
-
-        <div class="flex items-center justify-between bg-surface-subtle p-space-sm rounded border border-border-subtle">
+        <div class="p-space-xs rounded bg-surface-subtle border border-border-subtle flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="h-2 w-2 rounded-full bg-status-success animate-pulse"></div>
-            <span class="font-label-sm text-label-sm text-on-surface font-semibold">Warehouse Cloud</span>
+            <div class="w-7 h-7 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : 'bg-primary'} text-white flex items-center justify-center font-bold text-[10px]">
+              ${userInitials}
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-[12px] text-on-surface line-clamp-1">${user.name || 'Alex Rivera'}</div>
+              <div class="text-[10px] text-tertiary font-medium">${user.role === 'EMPLOYEE' ? 'Warehouse Lead' : 'Inventory Admin'}</div>
+            </div>
           </div>
-          <span class="font-label-sm text-label-sm text-status-success font-medium">Operational</span>
+          <button onclick="window.signOut()" class="p-1 text-tertiary hover:text-status-danger rounded transition-colors" title="Lock Session & Sign Out">
+            <span class="material-symbols-outlined text-[16px]">logout</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between bg-surface-card px-2 py-1 rounded border border-border-subtle">
+          <div class="flex items-center gap-1.5">
+            <div class="h-2 w-2 rounded-full bg-status-success animate-pulse"></div>
+            <span class="font-label-sm text-[11px] text-on-surface font-semibold">Cloud ERP v2.4</span>
+          </div>
+          <span class="font-label-sm text-[11px] text-status-success font-medium">Operational</span>
         </div>
       </div>
     </aside>
