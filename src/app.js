@@ -14,6 +14,7 @@ import { renderStockLedgerView } from './views/StockLedgerView.js';
 import { renderWarehousesView } from './views/WarehousesView.js';
 import { renderAnalyticsView, initAnalyticsViewEvents } from './views/AnalyticsView.js';
 import { renderAlertsView, initAlertsViewEvents } from './views/AlertsView.js';
+import { renderLoginView, initLoginViewEvents } from './views/LoginView.js';
 
 class App {
   constructor() {
@@ -83,11 +84,30 @@ class App {
     // Close mobile sidebar on navigation
     window.toggleMobileSidebar(false);
 
-    // Update Header & Sidebar
+    const isLogin = this.currentRoute === 'login';
     const sidebarEl = document.getElementById('sidebarContainer');
     const headerEl = document.getElementById('headerContainer');
     const mainEl = document.getElementById('mainContentArea');
+    const workspaceCol = mainEl?.parentElement;
 
+    if (isLogin) {
+      if (sidebarEl) sidebarEl.innerHTML = '';
+      if (headerEl) headerEl.innerHTML = '';
+      if (workspaceCol) workspaceCol.className = 'flex-1 flex flex-col min-w-0 transition-all';
+      if (mainEl) mainEl.className = 'w-full min-h-screen';
+      if (mainEl) {
+        mainEl.innerHTML = renderLoginView();
+        initLoginViewEvents();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Normal authenticated view layout
+    if (workspaceCol) workspaceCol.className = 'flex-1 flex flex-col min-w-0 lg:pl-64 transition-all';
+    if (mainEl) mainEl.className = 'flex-1 p-space-md lg:p-space-lg mt-16 overflow-y-auto max-w-7xl mx-auto w-full pb-16';
+
+    // Update Header & Sidebar
     if (sidebarEl) sidebarEl.innerHTML = renderSidebar(this.currentRoute);
     if (headerEl) headerEl.innerHTML = renderHeader(this.currentRoute);
 
@@ -127,6 +147,12 @@ class App {
   async refreshCurrentView() {
     const mainEl = document.getElementById('mainContentArea');
     if (!mainEl) return;
+
+    if (this.currentRoute === 'login') {
+      mainEl.innerHTML = renderLoginView();
+      initLoginViewEvents();
+      return;
+    }
 
     // Refresh modals in case product quantities changed
     const modalEl = document.getElementById('modalContainer');

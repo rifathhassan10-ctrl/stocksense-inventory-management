@@ -116,8 +116,16 @@ export function renderSidebar(currentPath = 'dashboard') {
         </nav>
       </div>
 
-      <!-- Bottom Cloud Health Status -->
-      <div class="p-space-md border-t border-border-subtle bg-surface-card">
+      <!-- Bottom Cloud Health Status & Sign Out -->
+      <div class="p-space-md border-t border-border-subtle bg-surface-card space-y-2">
+        <a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant font-label-md text-label-md hover:bg-surface-subtle hover:text-on-surface transition-colors" href="#/login">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+            <span>Sign Out / Switch</span>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-tertiary">Lock</span>
+        </a>
+
         <div class="flex items-center justify-between bg-surface-subtle p-space-sm rounded border border-border-subtle">
           <div class="flex items-center gap-2">
             <div class="h-2 w-2 rounded-full bg-status-success animate-pulse"></div>

@@ -109,3 +109,9 @@ h1, h2, h3, h4, .font-headline {
     padding: 0 !important;
   }
 }
+
+/* Subtle background grid pattern for enterprise visual identity */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(37, 99, 235, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

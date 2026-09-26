@@ -146,15 +146,16 @@ export function renderHeader(currentPath = 'dashboard') {
         <div class="h-5 w-px bg-border-subtle"></div>
 
         <!-- User Profile Pill -->
-        <div class="flex items-center gap-space-sm pl-1">
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+        <a href="#/login" class="flex items-center gap-space-sm pl-1 group cursor-pointer" title="Switch User / Sign Out">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary group-hover:scale-105 transition-transform">
             <span class="material-symbols-outlined text-[18px]">person</span>
           </div>
           <div class="hidden md:flex flex-col text-left">
-            <span class="font-label-md text-label-md text-on-surface font-semibold leading-none">Alex Rivera</span>
+            <span class="font-label-md text-label-md text-on-surface font-semibold leading-none group-hover:text-primary transition-colors">Alex Rivera</span>
             <span class="font-label-sm text-label-sm text-tertiary leading-none mt-1">Inventory Manager</span>
           </div>
-        </div>
+          <span class="material-symbols-outlined text-[16px] text-tertiary group-hover:text-primary transition-colors">logout</span>
+        </a>
       </div>
     </header>
   `;
