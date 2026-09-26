@@ -1,0 +1,19 @@
+{
+  "name": "stocksense",
+  "version": "2.4.0",
+  "private": true,
+  "description": "StockSense - Precision Slate ERP Inventory Management System",
+  "scripts": {
+    "start": "npx -y serve . -p 3000 -s",
+    "dev": "npx -y serve . -p 3000 -s"
+  },
+  "keywords": [
+    "inventory",
+    "erp",
+    "ledger",
+    "supply-chain",
+    "stocksense"
+  ],
+  "author": "StockSense Team",
+  "license": "MIT"
+}
