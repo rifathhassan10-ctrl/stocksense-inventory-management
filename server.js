@@ -683,7 +683,7 @@ app.post('/api/v1/auth/login', (req, res) => {
   // Allow login with demo persona or password check
   if (foundUser) {
     if (password && password !== '••••••••••••' && password !== foundUser.password && password !== 'admin123') {
-      return res.status(401).json({ error: 'Invalid password. Hint: check demo credentials below.' });
+      return res.status(401).json({ error: 'Invalid password. Please check your credentials and try again.' });
     }
 
     const { password: _, ...safeUser } = foundUser;

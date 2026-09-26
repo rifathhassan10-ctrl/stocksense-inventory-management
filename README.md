@@ -16,7 +16,7 @@ StockSense enforces an **authentication-first routing flow**. When opening the w
 | 👷 **Warehouse Employee** | Marcus Vance (FL-04) | `operator.dock@stocksense.io` | `operator123` | `#/operations` | Dock Intake Receipts, Outbound Deliveries, Bin-to-Bin Transfers, Physical Cycle Count Variance |
 | 🔍 **Compliance Auditor** | Elena Rostova | `auditor@stocksense.io` | `auditor123` | `#/stock-ledger` | Cryptographic Ledger Audit, SHA-256 state chain verification, CSV & Audit Report export |
 
-> **⚡ 1-Click Fast Login**: The login screen features dedicated 1-click **"Sign In as Admin"** and **"Sign In as Employee"** buttons for immediate testing without manually typing credentials.
+> **⚡ Secure Role Access**: In compliance with enterprise security standards, **administrative credentials are not advertised on the public login page**. Administrators access the system via standard email entry or Google Workspace authentication. The login page provides an interactive **Google Sign-In account selector** and **Warehouse Terminal fast-access**.
 
 ---
 
@@ -25,12 +25,13 @@ StockSense enforces an **authentication-first routing flow**. When opening the w
 ### 1. 🔐 Universal Multi-Provider Enterprise Login (`#/login`)
 - **Login-First Guard**: Unauthenticated requests automatically redirect to `#/login` first.
 - **Stitch Design**: Faithfully implemented from Stitch Screen `c031b3bb2bb044d3939d83a8a6c5d13c`.
-- **Federated SSO**: One-click authentication with Google Workspace, Microsoft 365 / Azure AD, and Apple ID.
+- **Google Sign-In Modal**: Interactive Google Identity Services account selector with animated OAuth 2.0 PKCE token exchange.
+- **Federated SSO**: Multi-provider support for Google Workspace, Microsoft 365 / Azure AD, and Apple ID Passkey.
 - **3 Authentication Modalities**:
-  - **Email & Master Passphrase**: Secure credentials with show/hide password toggle.
-  - **SMS OTP**: Registered mobile authentication with 6-digit passcode grid and FIDO2 / YubiKey hardware key support.
+  - **Email & Master Passphrase**: Secure credentials with show/hide password toggle and password recovery.
+  - **SMS OTP**: Registered mobile authentication with 6-digit passcode grid (auto-advancing input focus) and FIDO2 / YubiKey hardware key support.
   - **SAML / SSO**: Corporate identity provider routing (`.stocksense.io`) with FIPS 140-2 Level 3 certificate notice.
-- **Credentials Panel**: Visible cards displaying exact test credentials and 1-click login buttons.
+- **Warehouse Operator Terminal**: Fast 1-click dock operator sign in without disclosing administrative accounts.
 - **Right Telemetry Showcase**: Live immutable ledger card snapshot, volumetric bay load gauge, weekly inbound velocity bar chart, and enterprise endorsement.
 
 ### 2. 🛡️ Admin Management & RBAC Console (`#/admin`)
