@@ -136,12 +136,13 @@ export function renderSidebar(currentPath = 'dashboard') {
       <div class="p-space-md border-t border-border-subtle bg-surface-card space-y-2">
         <div class="p-space-xs rounded bg-surface-subtle border border-border-subtle flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : 'bg-primary'} text-white flex items-center justify-center font-bold text-[10px]">
-              ${userInitials}
+            <div class="w-7 h-7 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : (user.role === 'AUDITOR' ? 'bg-amber-600' : 'bg-primary')} text-white flex items-center justify-center font-bold text-[10px] overflow-hidden">
+              ${user.picture ? `<img src="${user.picture}" alt="${user.name}" class="w-full h-full object-cover" onerror="this.remove()">` : ''}
+              <span>${userInitials}</span>
             </div>
             <div class="text-left">
               <div class="font-bold text-[12px] text-on-surface line-clamp-1">${user.name || 'Alex Rivera'}</div>
-              <div class="text-[10px] text-tertiary font-medium">${user.role === 'EMPLOYEE' ? 'Warehouse Lead' : 'Inventory Admin'}</div>
+              <div class="text-[10px] text-tertiary font-medium">${user.roleTitle || (user.role === 'EMPLOYEE' ? 'Warehouse Operations' : (user.role === 'AUDITOR' ? 'Compliance Auditor' : 'Inventory Director'))}</div>
             </div>
           </div>
           <button onclick="window.signOut()" class="p-1 text-tertiary hover:text-status-danger rounded transition-colors" title="Lock Session & Sign Out">

@@ -149,12 +149,13 @@ export function renderHeader(currentPath = 'dashboard') {
         <!-- User Profile Pill -->
         <div class="flex items-center gap-space-sm pl-1">
           <a href="#/admin" class="flex items-center gap-space-sm group cursor-pointer" title="View Profile & Access Control">
-            <div class="w-8 h-8 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : 'bg-primary'} flex items-center justify-center text-on-primary group-hover:scale-105 transition-transform text-xs font-bold">
-              ${user.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+            <div class="w-8 h-8 rounded-full ${user.role === 'EMPLOYEE' ? 'bg-emerald-600' : (user.role === 'AUDITOR' ? 'bg-amber-600' : 'bg-primary')} flex items-center justify-center text-on-primary group-hover:scale-105 transition-transform text-xs font-bold overflow-hidden">
+              ${user.picture ? `<img src="${user.picture}" alt="${user.name}" class="w-full h-full object-cover" onerror="this.remove()">` : ''}
+              <span>${(user.name || 'AR').split(' ').map(n => n ? n[0] : '').join('').substring(0, 2).toUpperCase() || 'U'}</span>
             </div>
             <div class="hidden md:flex flex-col text-left">
-              <span class="font-label-md text-label-md text-on-surface font-semibold leading-none group-hover:text-primary transition-colors">${user.name}</span>
-              <span class="font-label-sm text-label-sm text-tertiary leading-none mt-1">${user.role === 'EMPLOYEE' ? 'Warehouse Lead (Employee)' : 'Inventory Manager (Admin)'}</span>
+              <span class="font-label-md text-label-md text-on-surface font-semibold leading-none group-hover:text-primary transition-colors">${user.name || 'Alex Rivera'}</span>
+              <span class="font-label-sm text-label-sm text-tertiary leading-none mt-1">${user.roleTitle || (user.role === 'EMPLOYEE' ? 'Warehouse Operations' : (user.role === 'AUDITOR' ? 'Compliance Auditor' : 'Inventory Director'))}</span>
             </div>
           </a>
 

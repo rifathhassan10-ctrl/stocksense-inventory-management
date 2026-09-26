@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in with Google</title>
+  <link rel="icon" href="https://www.google.com/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f0f4f9;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- Main Google Sign-in Card -->
+  <div class="w-full max-w-[440px] bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-slate-200/80 transition-all">
+    
+    <!-- Top Google Logo -->
+    <div class="flex items-center justify-between mb-6">
+      <svg class="w-8 h-8" viewBox="0 0 24 24">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+      </svg>
+      <span class="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded-full">accounts.google.com</span>
+    </div>
+
+    <!-- Step 1: Choose or Enter Account -->
+    <div id="step-choose-account">
+      <h1 class="text-2xl font-normal text-slate-800 tracking-tight">Sign in with Google</h1>
+      <p class="text-sm text-slate-600 mt-2 mb-6">to continue to <span class="font-medium text-slate-900">StockSense Enterprise ERP</span></p>
+
+      <!-- Account Selection List -->
+      <div class="space-y-2 mb-6">
+        <!-- Option A: Standard Google Account -->
+        <button type="button" onclick="selectAccount('Alex Rivera', 'alex.rivera@stocksense.io', 'ADMIN')" class="w-full flex items-center justify-between p-3.5 rounded-xl hover:bg-slate-50 border border-slate-200 transition text-left group">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-medium text-sm">
+              AR
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-800">Alex Rivera</div>
+              <div class="text-xs text-slate-500">alex.rivera@stocksense.io</div>
+            </div>
+          </div>
+          <span class="text-xs text-[#1a73e8] font-medium opacity-0 group-hover:opacity-100 transition">Select</span>
+        </button>
+
+        <!-- Option B: Operations Google Account -->
+        <button type="button" onclick="selectAccount('Marcus Vance', 'operator.dock@stocksense.io', 'EMPLOYEE')" class="w-full flex items-center justify-between p-3.5 rounded-xl hover:bg-slate-50 border border-slate-200 transition text-left group">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-[#0d652d] text-white flex items-center justify-center font-medium text-sm">
+              MV
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-800">Marcus Vance</div>
+              <div class="text-xs text-slate-500">operator.dock@stocksense.io</div>
+            </div>
+          </div>
+          <span class="text-xs text-[#1a73e8] font-medium opacity-0 group-hover:opacity-100 transition">Select</span>
+        </button>
+
+        <!-- Option C: Use your own Google Account -->
+        <button type="button" onclick="showCustomInput()" class="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-slate-50 border border-dashed border-slate-300 transition text-left text-slate-700">
+          <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-medium text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800">Use your personal Google account</div>
+            <div class="text-xs text-slate-500">Sign in with any @gmail.com or Workspace ID</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Custom Email Input (Hidden by default) -->
+      <div id="custom-account-section" class="hidden mb-6 pt-4 border-t border-slate-100">
+        <label class="block text-xs font-medium text-slate-700 mb-1">Email or phone</label>
+        <input type="email" id="custom-google-email" placeholder="username@gmail.com" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] outline-none" />
+        <div class="flex justify-end gap-2 mt-3">
+          <button type="button" onclick="hideCustomInput()" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium">Back</button>
+          <button type="button" onclick="handleCustomSubmit()" class="px-4 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium rounded-lg shadow-sm">Next</button>
+        </div>
+      </div>
+
+      <!-- Footer Help -->
+      <div class="text-xs text-slate-500 leading-relaxed border-t border-slate-100 pt-4">
+        To continue, Google will share your name, email address, language preference, and profile picture with StockSense ERP. Before using this app, you can review StockSense's <a href="#" class="text-[#1a73e8] hover:underline">Privacy Policy</a> and <a href="#" class="text-[#1a73e8] hover:underline">Terms of Service</a>.
+      </div>
+    </div>
+
+    <!-- Step 2: Permissions Consent Screen ("I allow every permission") -->
+    <div id="step-permissions" class="hidden">
+      <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 mb-6">
+        <div id="consent-avatar" class="w-9 h-9 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-medium text-sm">
+          U
+        </div>
+        <div class="overflow-hidden">
+          <div id="consent-name" class="text-sm font-medium text-slate-800 truncate">Google User</div>
+          <div id="consent-email" class="text-xs text-slate-500 truncate">user@gmail.com</div>
+        </div>
+      </div>
+
+      <h2 class="text-lg font-normal text-slate-800">StockSense wants access to your Google Account</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-5">This will allow StockSense ERP to:</p>
+
+      <!-- Permissions list -->
+      <div class="space-y-3.5 mb-6 text-xs text-slate-700">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-[#1a73e8] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <span class="font-medium text-slate-900">View your basic profile info</span>
+            <p class="text-slate-500 text-[11px] mt-0.5">Name, profile photo, and associated enterprise workspace</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-[#1a73e8] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <span class="font-medium text-slate-900">View your email address</span>
+            <p class="text-slate-500 text-[11px] mt-0.5">Used for StockSense digital stock ledger authorization</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-[#1a73e8] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <span class="font-medium text-slate-900">Single Sign-On (OpenID Connect)</span>
+            <p class="text-slate-500 text-[11px] mt-0.5">Secure cryptographically signed session verification</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consent Actions -->
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" onclick="cancelConsent()" class="px-4 py-2 text-sm text-[#1a73e8] hover:bg-blue-50 font-medium rounded-lg transition">
+          Cancel
+        </button>
+        <button type="button" onclick="grantPermissions()" id="btn-allow-permissions" class="px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg shadow-sm flex items-center gap-2 transition">
+          <span>Allow &amp; Continue</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Loading & Handshake State -->
+    <div id="step-loading" class="hidden py-8 flex flex-col items-center justify-center text-center">
+      <div class="w-12 h-12 rounded-full border-3 border-slate-100 border-t-[#1a73e8] animate-spin mb-4"></div>
+      <h3 class="text-sm font-medium text-slate-800">Signing into StockSense...</h3>
+      <p class="text-xs text-slate-500 mt-1">Exchanging authorized tokens with accounts.google.com</p>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedUser = null;
+
+    function selectAccount(name, email, role) {
+      selectedUser = {
+        name,
+        email,
+        role: role || (email.toLowerCase().includes('admin') ? 'ADMIN' : (email.toLowerCase().includes('audit') ? 'AUDITOR' : 'EMPLOYEE')),
+        picture: 'https://lh3.googleusercontent.com/a/default-user=s96-c'
+      };
+      showConsentStep();
+    }
+
+    function showCustomInput() {
+      document.getElementById('custom-account-section').classList.remove('hidden');
+      const input = document.getElementById('custom-google-email');
+      if (input) input.focus();
+    }
+
+    function hideCustomInput() {
+      document.getElementById('custom-account-section').classList.add('hidden');
+    }
+
+    function handleCustomSubmit() {
+      const email = document.getElementById('custom-google-email')?.value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid Google email address.');
+        return;
+      }
+      const isAlexAdmin = email.toLowerCase() === 'alex.rivera@stocksense.io';
+      const role = isAlexAdmin ? 'ADMIN' : (email.toLowerCase().includes('audit') ? 'AUDITOR' : 'EMPLOYEE');
+      const name = isAlexAdmin ? 'Alex Rivera' : email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      selectedUser = {
+        name,
+        email,
+        role,
+        picture: 'https://lh3.googleusercontent.com/a/default-user=s96-c'
+      };
+      showConsentStep();
+    }
+
+    function showConsentStep() {
+      document.getElementById('step-choose-account').classList.add('hidden');
+      document.getElementById('step-permissions').classList.remove('hidden');
+
+      document.getElementById('consent-name').innerText = selectedUser.name;
+      document.getElementById('consent-email').innerText = selectedUser.email;
+      const initials = selectedUser.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+      document.getElementById('consent-avatar').innerText = initials || 'G';
+    }
+
+    function cancelConsent() {
+      document.getElementById('step-permissions').classList.add('hidden');
+      document.getElementById('step-choose-account').classList.remove('hidden');
+    }
+
+    function grantPermissions() {
+      document.getElementById('step-permissions').classList.add('hidden');
+      document.getElementById('step-loading').classList.remove('hidden');
+
+      // Generate realistic Google OAuth 2.0 PKCE / OIDC token
+      const googleToken = 'ya29.a0AcM612' + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+      
+      const payload = {
+        type: 'GOOGLE_AUTH_SUCCESS',
+        token: googleToken,
+        user: selectedUser
+      };
+
+      setTimeout(() => {
+        // Send message to parent window
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage(payload, window.location.origin);
+          setTimeout(() => window.close(), 300);
+        } else {
+          // If standalone window or fallback, store in localStorage and redirect
+          localStorage.setItem('stocksense_auth', 'true');
+          localStorage.setItem('stocksense_user', JSON.stringify(selectedUser));
+          const target = selectedUser.role === 'ADMIN' ? '/#/dashboard' : (selectedUser.role === 'AUDITOR' ? '/#/stock-ledger' : '/#/operations');
+          window.location.href = target;
+        }
+      }, 700);
+    }
+  </script>
+</body>
+</html>

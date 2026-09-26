@@ -673,48 +673,166 @@ let systemSettings = {
   maintenanceMode: false
 };
 
+const ACTIVE_SESSIONS = new Map();
+const ACTIVE_OTP_CODES = new Map();
+
+// Standard Login (Email & Password)
 app.post('/api/v1/auth/login', (req, res) => {
   const { email, password } = req.body;
 
-  const foundUser = SYSTEM_USERS.find(u => 
-    u.email.toLowerCase() === (email || '').toLowerCase().trim()
-  );
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Work email and master password are required.' });
+  }
 
-  // Allow login with demo persona or password check
+  const cleanEmail = email.toLowerCase().trim();
+  const foundUser = SYSTEM_USERS.find(u => u.email.toLowerCase() === cleanEmail);
+
   if (foundUser) {
-    if (password && password !== '••••••••••••' && password !== foundUser.password && password !== 'admin123') {
+    // Check password
+    if (password !== foundUser.password) {
       return res.status(401).json({ error: 'Invalid password. Please check your credentials and try again.' });
     }
 
     const { password: _, ...safeUser } = foundUser;
+    const token = 'jwt-stocksense-' + safeUser.role.toLowerCase() + '-' + Date.now();
+    ACTIVE_SESSIONS.set(token, safeUser);
+
     return res.json({
       success: true,
-      token: 'jwt-stocksense-' + safeUser.role.toLowerCase() + '-' + Date.now(),
+      token,
       user: safeUser
     });
   }
 
-  // Fallback for custom emails
-  res.json({
-    success: true,
-    token: 'jwt-stocksense-session-' + Date.now(),
-    user: {
-      id: 'usr-custom-' + Date.now(),
-      name: email.split('@')[0],
-      email: email,
-      role: 'EMPLOYEE',
-      roleTitle: 'Warehouse Operator',
-      badge: 'OP-TEMP',
-      facility: 'Main Warehouse',
-      securityClearance: 'Terminal Standard',
-      permissions: ['EXECUTE_OPERATIONS', 'VIEW_PRODUCTS']
-    }
+  // If email is not in registered system users
+  return res.status(401).json({ 
+    error: 'Account not found for this work email. Please sign in with your authorized company credentials or Google Workspace.' 
   });
 });
 
+// Google Sign-In & OAuth 2.0 Handler
+app.post('/api/v1/auth/google', (req, res) => {
+  const { email, name, role, token, picture } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Google email address is required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  let user = SYSTEM_USERS.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    // Dynamically register Google user with role
+    const assignedRole = role || (cleanEmail.includes('admin') || cleanEmail === 'alex.rivera@stocksense.io' ? 'ADMIN' : (cleanEmail.includes('audit') ? 'AUDITOR' : 'EMPLOYEE'));
+    user = {
+      id: 'usr-google-' + Date.now(),
+      name: name || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      role: assignedRole,
+      roleTitle: assignedRole === 'ADMIN' ? 'Inventory Director' : (assignedRole === 'AUDITOR' ? 'Compliance Auditor' : 'Warehouse Operations Specialist'),
+      badge: 'GGL-' + Math.floor(10 + Math.random() * 90),
+      facility: 'Main Warehouse (Bay A-F)',
+      status: 'ACTIVE',
+      securityClearance: assignedRole === 'ADMIN' ? 'FIPS 140-2 Level 3' : 'Terminal Authorized',
+      picture: picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+      permissions: assignedRole === 'ADMIN' ? ['ALL_PERMISSIONS'] : ['EXECUTE_OPERATIONS', 'VIEW_PRODUCTS']
+    };
+    SYSTEM_USERS.push(user);
+  }
+
+  const { password: _, ...safeUser } = user;
+  const sessionToken = 'jwt-stocksense-google-' + safeUser.role.toLowerCase() + '-' + Date.now();
+  ACTIVE_SESSIONS.set(sessionToken, safeUser);
+
+  res.json({
+    success: true,
+    token: sessionToken,
+    user: safeUser
+  });
+});
+
+// Send SMS OTP Passcode
+app.post('/api/v1/auth/otp/send', (req, res) => {
+  const { phone } = req.body;
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+
+  // Generate 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  ACTIVE_OTP_CODES.set(cleanPhone, {
+    code,
+    expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
+  });
+
+  console.log(`[SMS Gateway] Dispatched OTP ${code} to +${cleanPhone || '15553829014'}`);
+
+  res.json({
+    success: true,
+    message: `Verification passcode dispatched to ${phone || 'registered device'}.`,
+    demoCode: code,
+    expiresInSeconds: 300
+  });
+});
+
+// Verify SMS OTP Passcode
+app.post('/api/v1/auth/otp/verify', (req, res) => {
+  const { phone, otp } = req.body;
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+  const stored = ACTIVE_OTP_CODES.get(cleanPhone);
+
+  // Validate OTP code (or accept 839274 default demo code)
+  if (!stored || stored.code !== otp) {
+    if (otp !== '839274' && (!stored || stored.code !== otp)) {
+      return res.status(400).json({ error: 'Invalid or expired 6-digit passcode. Please check the code or request a new one.' });
+    }
+  }
+
+  // Assign dock employee user
+  const operator = SYSTEM_USERS.find(u => u.role === 'EMPLOYEE') || SYSTEM_USERS[1];
+  const { password: _, ...safeUser } = operator;
+  const token = 'jwt-stocksense-otp-' + Date.now();
+  ACTIVE_SESSIONS.set(token, safeUser);
+
+  res.json({
+    success: true,
+    token,
+    user: safeUser
+  });
+});
+
+// SAML / SSO Workspace Resolver
+app.post('/api/v1/auth/sso/resolve', (req, res) => {
+  const { domain } = req.body;
+  const cleanDomain = (domain || '').toLowerCase().trim();
+
+  res.json({
+    success: true,
+    domain: cleanDomain + '.stocksense.io',
+    idpEntityId: `https://identity.${cleanDomain}.stocksense.io/sso/saml`,
+    certificateStatus: 'FIPS 140-2 Level 3 Validated',
+    ssoRedirectUrl: `/#/operations`
+  });
+});
+
+// Current User Session
 app.get('/api/v1/auth/me', (req, res) => {
-  const { password: _, ...adminUser } = SYSTEM_USERS[0];
-  res.json({ user: adminUser });
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    const sessionUser = ACTIVE_SESSIONS.get(token);
+    if (sessionUser) return res.json({ user: sessionUser });
+  }
+
+  const { password: _, ...defaultUser } = SYSTEM_USERS[0];
+  res.json({ user: defaultUser });
+});
+
+// Logout Session
+app.post('/api/v1/auth/logout', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    ACTIVE_SESSIONS.delete(authHeader.split(' ')[1]);
+  }
+  res.json({ success: true, message: 'Session invalidated.' });
 });
 
 // Admin User Management & Settings Endpoints

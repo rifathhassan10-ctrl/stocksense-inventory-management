@@ -231,6 +231,84 @@ class ApiService {
     }
     return store.getWarehouseConfig();
   }
+
+  // ============================================================================
+  // AUTHENTICATION & SESSIONS
+  // ============================================================================
+  async login(email, password) {
+    const res = await fetch(`${this.baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Authentication failed. Please verify credentials.');
+    }
+    return data;
+  }
+
+  async googleLogin(googlePayload) {
+    const res = await fetch(`${this.baseUrl}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(googlePayload)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Google authentication failed.');
+    }
+    return data;
+  }
+
+  async sendOtp(phone) {
+    const res = await fetch(`${this.baseUrl}/auth/otp/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    return await res.json();
+  }
+
+  async verifyOtp(phone, otp) {
+    const res = await fetch(`${this.baseUrl}/auth/otp/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, otp })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Invalid OTP passcode.');
+    }
+    return data;
+  }
+
+  async resolveSso(domain) {
+    const res = await fetch(`${this.baseUrl}/auth/sso/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain })
+    });
+    return await res.json();
+  }
+
+  async logout() {
+    const token = localStorage.getItem('stocksense_token');
+    try {
+      await fetch(`${this.baseUrl}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (e) {
+      // Ignore network errors on logout
+    }
+    localStorage.removeItem('stocksense_auth');
+    localStorage.removeItem('stocksense_user');
+    localStorage.removeItem('stocksense_token');
+  }
 }
 
 export const apiService = new ApiService();
