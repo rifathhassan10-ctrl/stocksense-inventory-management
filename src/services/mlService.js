@@ -1,16 +1,22 @@
 // StockSense ML & Intelligent Predictive Service Layer
-// Future-ready service layer designed to connect to Python / TensorFlow / PyTorch microservices or GCP Vertex AI
+// Connects to real Node.js / Express analytics engine (/api/v1/analytics) with client-side fallback
 
 import { store } from '../store/dataStore.js';
 
 class MLService {
   constructor() {
-    this.isLocalEngine = true;
-    this.modelEndpoint = 'https://ml.stocksense.internal/v1/predict';
+    this.baseUrl = '/api/v1/analytics';
   }
 
   // 1. Stockout Risk Prediction
   async predictStockoutRisks() {
+    try {
+      const res = await fetch(`${this.baseUrl}/stockout-risks`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend ML engine offline, using local inference:', e);
+    }
+
     const products = store.getProducts();
     const risks = [];
 
@@ -55,16 +61,21 @@ class MLService {
 
   // 2. Automated Smart Reorder Suggestions (Economic Order Quantity)
   async getReorderSuggestions() {
+    try {
+      const res = await fetch(`${this.baseUrl}/reorder-suggestions`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend ML engine offline, calculating EOQ locally:', e);
+    }
+
     const products = store.getProducts();
     const suggestions = [];
 
     products.forEach(p => {
       if (p.totalStock <= p.minStock) {
         const annualDemand = (p.consumptionRateDaily || 1) * 365;
-        const orderCost = 45; // Simulated fixed PO processing fee
-        const holdingCost = (p.unitPrice || 50) * 0.18; // 18% carrying cost
-        
-        // Classical Wilson EOQ Formula: sqrt((2 * D * S) / H)
+        const orderCost = 45;
+        const holdingCost = (p.unitPrice || 50) * 0.18;
         const eoq = Math.round(Math.sqrt((2 * annualDemand * orderCost) / holdingCost)) || (p.minStock * 2);
         const supplierLeadDays = p.category === 'Raw Materials' ? 3 : (p.category === 'Electronics' ? 5 : 2);
 
@@ -87,10 +98,16 @@ class MLService {
 
   // 3. Anomaly Detection in Inventory Movements
   async detectAnomalies() {
+    try {
+      const res = await fetch(`${this.baseUrl}/anomalies`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend ML engine offline, scanning anomalies locally:', e);
+    }
+
     const ledger = store.getLedgerEntries();
     const anomalies = [];
 
-    // Analyze negative adjustments
     const adjustments = ledger.filter(l => l.operationType === 'ADJUSTMENT');
     adjustments.forEach(adj => {
       if (adj.quantity < 0 && Math.abs(adj.quantity) >= 3) {
@@ -108,7 +125,6 @@ class MLService {
       }
     });
 
-    // Detect high velocity shifts
     anomalies.push({
       id: 'anom-vol-1',
       type: 'CAPACITY_BOTTLENECK',
@@ -126,12 +142,18 @@ class MLService {
 
   // 4. Time-Series Demand Forecast (Next 7 Days)
   async getDemandForecast(sku) {
+    try {
+      const res = await fetch(`${this.baseUrl}/forecast/${sku}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Backend ML engine offline, generating forecast locally:', e);
+    }
+
     const prod = store.getProductBySku(sku) || store.getProducts()[0];
     const baseDaily = prod.consumptionRateDaily || 2.5;
 
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const forecast = days.map((day, idx) => {
-      // Seasonal weekend dip + slight upward trend simulation
       const weekendFactor = (day === 'Sat' || day === 'Sun') ? 0.35 : 1.0;
       const trendFactor = 1.0 + (idx * 0.04);
       const predictedDemand = Math.round((baseDaily * weekendFactor * trendFactor + (Math.sin(idx) * 0.8)) * 10) / 10;

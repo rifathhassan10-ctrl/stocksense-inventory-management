@@ -3,9 +3,11 @@
   "version": "2.4.0",
   "private": true,
   "description": "StockSense - Precision Slate ERP Inventory Management System",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "npx -y serve . -p 3000 -s",
-    "dev": "npx -y serve . -p 3000 -s"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "keywords": [
     "inventory",
@@ -15,5 +17,9 @@
     "stocksense"
   ],
   "author": "StockSense Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
 }
