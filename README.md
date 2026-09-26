@@ -16,7 +16,9 @@ StockSense enforces an **authentication-first routing flow**. When opening the w
 | 👷 **Warehouse Employee** | Marcus Vance (FL-04) | `operator.dock@stocksense.io` | `operator123` | `#/operations` | Dock Intake Receipts, Outbound Deliveries, Bin-to-Bin Transfers, Physical Cycle Count Variance |
 | 🔍 **Compliance Auditor** | Elena Rostova | `auditor@stocksense.io` | `auditor123` | `#/stock-ledger` | Cryptographic Ledger Audit, SHA-256 state chain verification, CSV & Audit Report export |
 
-> **⚡ Secure Role Access**: In compliance with enterprise security standards, **administrative credentials are not advertised on the public login page**. Administrators access the system via standard email entry or Google Workspace authentication. The login page provides an interactive **Google Sign-In account selector** and **Warehouse Terminal fast-access**.
+> **⚡ Production-Grade Security**: In compliance with enterprise security standards, **administrative credentials are not advertised on the public login page**. Administrators access the system via standard email entry or Google Workspace authentication.
+>
+> **🌐 Real Google Sign-In with Permissions**: Clicking the **Google** button opens an authentic Google OAuth popup (`auth_google_window.html`). Users can sign in with any personal or corporate Google account, review requested scopes on the Google permissions consent screen (*"StockSense wants access to your Google Account"*), and click **"Allow & Continue"** to complete the OAuth 2.0 PKCE handshake.
 
 ---
 
@@ -25,13 +27,16 @@ StockSense enforces an **authentication-first routing flow**. When opening the w
 ### 1. 🔐 Universal Multi-Provider Enterprise Login (`#/login`)
 - **Login-First Guard**: Unauthenticated requests automatically redirect to `#/login` first.
 - **Stitch Design**: Faithfully implemented from Stitch Screen `c031b3bb2bb044d3939d83a8a6c5d13c`.
-- **Google Sign-In Modal**: Interactive Google Identity Services account selector with animated OAuth 2.0 PKCE token exchange.
+- **Real Google Sign-In Popup**: Standalone OAuth 2.0 popup with account selection, permission consent screen, and secure `postMessage` token exchange.
 - **Federated SSO**: Multi-provider support for Google Workspace, Microsoft 365 / Azure AD, and Apple ID Passkey.
 - **3 Authentication Modalities**:
-  - **Email & Master Passphrase**: Secure credentials with show/hide password toggle and password recovery.
-  - **SMS OTP**: Registered mobile authentication with 6-digit passcode grid (auto-advancing input focus) and FIDO2 / YubiKey hardware key support.
-  - **SAML / SSO**: Corporate identity provider routing (`.stocksense.io`) with FIPS 140-2 Level 3 certificate notice.
-- **Warehouse Operator Terminal**: Fast 1-click dock operator sign in without disclosing administrative accounts.
+  - **Email & Master Passphrase**: Strict backend password verification, show/hide password toggle, and emergency access key recovery modal.
+  - **SMS OTP**: Real 60-second countdown timer, 6-digit passcode grid with auto-advancing focus, and hardware YubiKey / FIDO2 scan.
+  - **SAML / SSO**: Corporate identity provider routing (`.stocksense.io`) with FIPS 140-2 Level 3 certificate verification.
+- **Role-Appropriate Workstation Routing**:
+  - Operators $\rightarrow$ strictly routed to the **Operations Workstation (`#/operations`)**.
+  - Administrators $\rightarrow$ routed to the **Executive Dashboard (`#/dashboard`)** and **Admin Console (`#/admin`)**.
+  - Compliance Auditors $\rightarrow$ routed to the **Stock Ledger (`#/stock-ledger`)**.
 - **Right Telemetry Showcase**: Live immutable ledger card snapshot, volumetric bay load gauge, weekly inbound velocity bar chart, and enterprise endorsement.
 
 ### 2. 🛡️ Admin Management & RBAC Console (`#/admin`)
@@ -121,8 +126,16 @@ The backend runs concurrently with the web application on port `3000`:
 | `GET` | `/api/v1/analytics/reorder-suggestions` | Wilson EOQ replenishment calculations |
 | `GET` | `/api/v1/analytics/forecast/:sku` | 7-day Bayesian time-series demand forecast |
 | `GET` | `/api/v1/analytics/anomalies` | Shrinkage spikes and capacity bottleneck alerts |
-| `POST` | `/api/v1/auth/login` | Authenticate user credentials and return session token |
+| `POST` | `/api/v1/auth/login` | Authenticate work credentials with password verification |
+| `POST` | `/api/v1/auth/google` | Verify Google OAuth 2.0 PKCE token and profile |
+| `POST` | `/api/v1/auth/otp/send` | Generate and dispatch 6-digit SMS passcode |
+| `POST` | `/api/v1/auth/otp/verify` | Verify SMS passcode and authorize terminal |
+| `POST` | `/api/v1/auth/sso/resolve` | Validate SAML 2.0 corporate domain assertion |
 | `GET` | `/api/v1/auth/me` | Current authenticated session profile |
+| `POST` | `/api/v1/auth/logout` | Invalidate active session token |
+| `GET` | `/api/v1/admin/users` | List registered operators, badges, and clearance |
+| `GET` | `/api/v1/admin/settings` | Get ERP safety invariants and policy toggles |
+| `POST` | `/api/v1/admin/settings` | Update safety invariants (negative stock, conservation) |
 
 ---
 
@@ -184,8 +197,10 @@ StockSense/
 │   │   ├── StockLedgerView.js# Double-entry ledger & cryptographic drawers
 │   │   ├── WarehousesView.js# Facility zones, racks, and interactive bin telemetry
 │   │   ├── AnalyticsView.js# 7-day demand forecasting & Wilson EOQ engine
-│   │   └── AlertsView.js   # Active exception monitoring & quick reorders
+│   │   ├── AlertsView.js   # Active exception monitoring & quick reorders
+│   │   └── AdminView.js    # System operators directory & RBAC capability matrix
 │   └── app.js              # SPA Router coordinator and lifecycle manager
+├── auth_google_window.html # Standalone Google OAuth 2.0 popup with consent screen
 ├── index.html              # Single page entry point with Tailwind theme tokens
 ├── package.json            # Node.js project manifest & scripts
 ├── server.js               # Node.js / Express full REST API backend server
